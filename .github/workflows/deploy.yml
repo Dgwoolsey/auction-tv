@@ -39,8 +39,17 @@ jobs:
           AIRTABLE_BASE: ${{ secrets.AIRTABLE_BASE }}
         run: npm run build
 
+      # Stamp the commit onto the asset URLs. Without this the browser happily
+      # reuses a cached styles.css against freshly deployed HTML — which renders
+      # a broken layout, and on an unattended TV can persist for days.
       - name: Assemble site
-        run: cp index.html styles.css app.js public/
+        run: |
+          cp index.html styles.css app.js public/
+          V="${GITHUB_SHA:0:8}"
+          sed -i "s|href=\"styles.css\"|href=\"styles.css?v=$V\"|" public/index.html
+          sed -i "s|src=\"app.js\"|src=\"app.js?v=$V\"|" public/index.html
+          echo "Asset version: $V"
+          grep -E 'styles\.css|app\.js' public/index.html
 
       - uses: actions/upload-pages-artifact@v3
         with:
