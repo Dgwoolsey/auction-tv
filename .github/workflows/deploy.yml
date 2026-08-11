@@ -1,0 +1,57 @@
+name: Build and deploy TV dashboard
+
+on:
+  # Refresh on a schedule so new auctions and photos appear on their own.
+  schedule:
+    - cron: '*/30 * * * *'   # every 30 minutes
+  # Rebuild whenever the site code changes.
+  push:
+    branches: [main]
+  # Lets you force a refresh from the Actions tab or your phone.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never run two builds at once; let a newer one supersede a queued one.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Build data.json from Airtable + auction site
+        env:
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+          AIRTABLE_BASE: ${{ secrets.AIRTABLE_BASE }}
+        run: npm run build
+
+      - name: Assemble site
+        run: cp index.html styles.css app.js public/
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

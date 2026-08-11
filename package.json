@@ -1,0 +1,14 @@
+{
+  "name": "auction-tv",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Checkout-counter TV dashboard for Woolsey Auction Company",
+  "scripts": {
+    "build": "node scripts/build-data.mjs"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "qrcode": "^1.5.4"
+  }
+}

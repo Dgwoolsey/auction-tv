@@ -1,0 +1,327 @@
+/* Woolsey Auction Company — checkout counter TV
+   Designed for a 1920x1080 screen viewed from roughly 10 feet.
+   All sizing is in vw/vh so it scales to whatever TV it lands on. */
+
+:root {
+  --ink:        #0d0f12;
+  --ink-2:      #15181d;
+  --ink-3:      #1e232a;
+  --line:       #2b323b;
+  --text:       #f2f4f7;
+  --text-dim:   #9aa4b2;
+  --gold:       #d8a53a;
+  --gold-soft:  #f0c96b;
+  --red:        #e0503f;
+  --green:      #46a06b;
+  --blue:       #4a7fc1;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  background: var(--ink);
+  color: var(--text);
+  font-family: "Segoe UI", -apple-system, system-ui, sans-serif;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.screen {
+  height: 100vh;
+  width: 100vw;
+  display: grid;
+  grid-template-rows: 9vh 1fr 6vh;
+}
+
+/* ---------- top bar ---------- */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2.2vw;
+  background: linear-gradient(180deg, var(--ink-2), var(--ink));
+  border-bottom: 0.25vh solid var(--gold);
+}
+
+.brand-name {
+  font-size: 2.5vh;
+  font-weight: 800;
+  letter-spacing: 0.32vw;
+  color: var(--gold);
+}
+
+.brand-sub {
+  font-size: 1.9vh;
+  color: var(--text-dim);
+  margin-top: 0.3vh;
+}
+
+.clock { text-align: right; }
+.clock-time { font-size: 3.1vh; font-weight: 700; font-variant-numeric: tabular-nums; }
+.clock-date { font-size: 1.7vh; color: var(--text-dim); }
+
+/* ---------- main stage ---------- */
+
+.stage {
+  display: grid;
+  grid-template-columns: 62fr 38fr;
+  gap: 1.4vw;
+  padding: 1.4vw 2.2vw;
+  min-height: 0;
+}
+
+/* ---------- photo slideshow ---------- */
+
+.photos {
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  gap: 1.2vh;
+  min-height: 0;
+}
+
+.photo-frame {
+  position: relative;
+  border-radius: 1vh;
+  overflow: hidden;
+  background: var(--ink-2);
+  border: 0.15vh solid var(--line);
+  min-height: 0;
+}
+
+.photo-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+  opacity: 0;
+  transition: opacity 900ms ease-in-out;
+}
+
+.photo-img.on { opacity: 1; }
+
+.photo-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.6vh;
+  color: var(--text-dim);
+}
+
+.photo-empty.hide { display: none; }
+
+.photo-empty-mark {
+  width: 12vh;
+  height: 12vh;
+  border-radius: 50%;
+  border: 0.4vh solid var(--gold);
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 6vh;
+  font-weight: 800;
+}
+
+.photo-empty-text { font-size: 2.1vh; }
+
+.photo-caption {
+  font-size: 2.3vh;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 3.2vh;
+}
+
+.auction-strip {
+  display: flex;
+  gap: 1vw;
+  flex-wrap: wrap;
+}
+
+.auction-chip {
+  background: var(--ink-2);
+  border: 0.15vh solid var(--line);
+  border-left: 0.45vh solid var(--gold);
+  border-radius: 0.6vh;
+  padding: 0.9vh 1.1vw;
+  min-width: 0;
+}
+
+.auction-chip-title {
+  font-size: 1.85vh;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 22vw;
+}
+
+.auction-chip-meta {
+  font-size: 1.6vh;
+  color: var(--gold-soft);
+  margin-top: 0.25vh;
+}
+
+/* ---------- right column ---------- */
+
+.side {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 1.4vh;
+  min-height: 0;
+}
+
+.terms-card {
+  background: var(--ink-2);
+  border: 0.15vh solid var(--line);
+  border-radius: 1vh;
+  padding: 2.6vh 1.9vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  min-height: 0;
+  border-top: 0.6vh solid var(--gold);
+  transition: opacity 500ms ease;
+}
+
+.terms-card.fade { opacity: 0; }
+.terms-card.is-warning   { border-top-color: var(--red); }
+.terms-card.is-highlight { border-top-color: var(--gold-soft); }
+
+.terms-eyebrow {
+  font-size: 1.5vh;
+  letter-spacing: 0.25vw;
+  color: var(--text-dim);
+  font-weight: 700;
+  margin-bottom: 1.4vh;
+}
+
+.terms-card.is-warning .terms-eyebrow { color: var(--red); }
+
+.terms-title {
+  font-size: 3.4vh;
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 1.8vh;
+}
+
+.terms-body {
+  font-size: 2.6vh;
+  line-height: 1.45;
+  color: #dde3ea;
+}
+
+.terms-dots {
+  display: flex;
+  gap: 0.5vw;
+  margin-top: auto;
+  padding-top: 2vh;
+}
+
+.dot {
+  width: 0.7vh;
+  height: 0.7vh;
+  border-radius: 50%;
+  background: var(--line);
+}
+
+.dot.on { background: var(--gold); }
+
+/* ---------- QR codes ---------- */
+
+.qr-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.9vw;
+}
+
+.qr-card {
+  background: var(--ink-2);
+  border: 0.15vh solid var(--line);
+  border-radius: 1vh;
+  padding: 1.4vh 0.6vw;
+  text-align: center;
+}
+
+.qr-google   { border-bottom: 0.5vh solid var(--blue); }
+.qr-facebook { border-bottom: 0.5vh solid #3b5998; }
+.qr-terms    { border-bottom: 0.5vh solid var(--text-dim); }
+
+.qr-box {
+  background: #fff;
+  border-radius: 0.6vh;
+  padding: 0.7vh;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qr-box svg { width: 100%; height: 100%; display: block; }
+
+.qr-label {
+  font-size: 1.75vh;
+  font-weight: 700;
+  margin-top: 1vh;
+  line-height: 1.2;
+}
+
+.qr-sub {
+  font-size: 1.4vh;
+  color: var(--text-dim);
+  margin-top: 0.3vh;
+}
+
+/* ---------- ticker ---------- */
+
+.ticker {
+  background: var(--gold);
+  color: #17130a;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.ticker-track {
+  display: inline-block;
+  padding-left: 100%;
+  font-size: 2.3vh;
+  font-weight: 700;
+  letter-spacing: 0.05vw;
+  animation: scroll 34s linear infinite;
+}
+
+@keyframes scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-100%); }
+}
+
+/* ---------- status pill (only shows on trouble) ---------- */
+
+.status {
+  position: fixed;
+  bottom: 7.2vh;
+  right: 1vw;
+  font-size: 1.4vh;
+  color: var(--text-dim);
+  background: rgba(0,0,0,0.65);
+  padding: 0.5vh 0.8vw;
+  border-radius: 0.5vh;
+  opacity: 0;
+  transition: opacity 400ms;
+  pointer-events: none;
+}
+
+.status.show { opacity: 1; }

@@ -1,0 +1,30 @@
+{
+  "_comment": "Offline snapshot of the Woolsey TV Dashboard Airtable base, used only for local preview when AIRTABLE_TOKEN is not set. CI always reads the live base. Keys are table IDs.",
+
+  "tblh1s2TThsFVaukm": [
+    { "id": "rec1", "fields": { "Title": "Buyer's Premium", "Body": "12% — or 10% if you pay in person today with cash, check, or money order.", "Emphasis": "Highlight", "Order": 1, "Active": true } },
+    { "id": "rec2", "fields": { "Title": "Payment Deadline", "Body": "Pay by 4:30 PM on your pickup day to get the 10% rate. After that, the card on file is charged automatically at 12%.", "Emphasis": "Normal", "Order": 2, "Active": true } },
+    { "id": "rec3", "fields": { "Title": "Loading Is Your Responsibility", "Body": "Bring your own help, vehicle, straps, and tools. Our staff show you where your items are and lend a hand — they are not a loading crew. Machinery is never guaranteed.", "Emphasis": "Warning", "Order": 3, "Active": true } },
+    { "id": "rec4", "fields": { "Title": "Onsite Auctions: Pickup Is Your Only Chance", "Body": "When pickup ends we hand back the keys and lose all access. Anything left behind is thrown away or stays with the property. No refunds.", "Emphasis": "Warning", "Order": 4, "Active": true } },
+    { "id": "rec5", "fields": { "Title": "Storage — Canon City Only", "Body": "$10 per lot, per day, starting the morning after pickup closes. Items are deemed abandoned after the third day.", "Emphasis": "Normal", "Order": 5, "Active": true } },
+    { "id": "rec6", "fields": { "Title": "Can't Make Your Pickup?", "Body": "Email info@woolseyauction.com BEFORE your window. We work with people who tell us in advance.", "Emphasis": "Highlight", "Order": 6, "Active": true } },
+    { "id": "rec7", "fields": { "Title": "Firearms: 3-Day Wait", "Body": "Colorado law requires a three-day waiting period. On pickup day you start your 4473 and background check — you will not leave with the firearm that day.", "Emphasis": "Warning", "Order": 7, "Active": true } },
+    { "id": "rec8", "fields": { "Title": "Sales Tax", "Body": "8.7% at our Canon City building. The rate follows where the auction is held, not where you live.", "Emphasis": "Normal", "Order": 8, "Active": true } }
+  ],
+
+  "tblrUsNcPUdd3siIB": [],
+
+  "tblV0WvDzN4vN1ojf": [],
+
+  "tblsswJPNMJReppRS": [
+    { "id": "set1", "fields": { "Key": "google_review_url", "Value": "https://search.google.com/local/writereview?placeid=ChIJ5x3tlWGPFIcRZu4y6gIEuIM" } },
+    { "id": "set2", "fields": { "Key": "facebook_review_url", "Value": "https://www.facebook.com/profile.php?id=100063507970920&sk=reviews" } },
+    { "id": "set3", "fields": { "Key": "terms_full_url", "Value": "https://bid.woolseyauction.com/terms" } },
+    { "id": "set4", "fields": { "Key": "headline", "Value": "Thanks for bidding with us" } },
+    { "id": "set5", "fields": { "Key": "ticker", "Value": "Questions? Ask at the counter or call 719-275-1439" } },
+    { "id": "set6", "fields": { "Key": "phone", "Value": "719-275-1439" } },
+    { "id": "set7", "fields": { "Key": "email", "Value": "info@woolseyauction.com" } },
+    { "id": "set8", "fields": { "Key": "slide_seconds", "Value": "7" } },
+    { "id": "set9", "fields": { "Key": "terms_seconds", "Value": "12" } }
+  ]
+}

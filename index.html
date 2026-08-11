@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Woolsey Auction Company</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="screen" class="screen">
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-name">WOOLSEY AUCTION COMPANY</div>
+      <div class="brand-sub" id="headline">Thanks for bidding with us</div>
+    </div>
+    <div class="clock">
+      <div class="clock-time" id="clockTime">&nbsp;</div>
+      <div class="clock-date" id="clockDate">&nbsp;</div>
+    </div>
+  </header>
+
+  <main class="stage">
+
+    <!-- LEFT: photo slideshow -->
+    <section class="photos" id="photos">
+      <div class="photo-frame">
+        <img class="photo-img" id="photoA" alt="">
+        <img class="photo-img" id="photoB" alt="">
+        <div class="photo-empty" id="photoEmpty">
+          <div class="photo-empty-mark">W</div>
+          <div class="photo-empty-text">Auction photos load here</div>
+        </div>
+      </div>
+      <div class="photo-caption" id="photoCaption"></div>
+      <div class="auction-strip" id="auctionStrip"></div>
+    </section>
+
+    <!-- RIGHT: rotating terms + QR codes -->
+    <aside class="side">
+
+      <div class="terms-card" id="termsCard">
+        <div class="terms-eyebrow">GOOD TO KNOW</div>
+        <div class="terms-title" id="termsTitle">&nbsp;</div>
+        <div class="terms-body" id="termsBody">&nbsp;</div>
+        <div class="terms-dots" id="termsDots"></div>
+      </div>
+
+      <div class="qr-row" id="qrRow">
+        <div class="qr-card qr-google">
+          <div class="qr-box" id="qrGoogle"></div>
+          <div class="qr-label">Review us on Google</div>
+          <div class="qr-sub">Scan with your phone camera</div>
+        </div>
+        <div class="qr-card qr-facebook">
+          <div class="qr-box" id="qrFacebook"></div>
+          <div class="qr-label">Review us on Facebook</div>
+          <div class="qr-sub">Scan with your phone camera</div>
+        </div>
+        <div class="qr-card qr-terms">
+          <div class="qr-box" id="qrTerms"></div>
+          <div class="qr-label">Full Terms</div>
+          <div class="qr-sub">Read before you bid</div>
+        </div>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <footer class="ticker">
+    <div class="ticker-track" id="tickerTrack"></div>
+  </footer>
+
+  <div class="status" id="status"></div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
