@@ -20,6 +20,7 @@
     { "id": "set1", "fields": { "Key": "google_review_url", "Value": "https://search.google.com/local/writereview?placeid=ChIJ5x3tlWGPFIcRZu4y6gIEuIM" } },
     { "id": "set2", "fields": { "Key": "facebook_review_url", "Value": "https://www.facebook.com/profile.php?id=100063507970920&sk=reviews" } },
     { "id": "set3", "fields": { "Key": "terms_full_url", "Value": "https://bid.woolseyauction.com/terms" } },
+    { "id": "set10", "fields": { "Key": "consign_form_url", "Value": "https://airtable.com/apprxqJCv4zUSWN9d/pagHqZrE7Grp8JmuM/form" } },
     { "id": "set4", "fields": { "Key": "headline", "Value": "Thanks for bidding with us" } },
     { "id": "set5", "fields": { "Key": "ticker", "Value": "Questions? Ask at the counter or call 719-275-1439" } },
     { "id": "set6", "fields": { "Key": "phone", "Value": "719-275-1439" } },

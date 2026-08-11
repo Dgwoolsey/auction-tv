@@ -23,8 +23,23 @@
 
   <main class="stage">
 
-    <!-- LEFT: photo slideshow -->
-    <section class="photos" id="photos">
+    <!-- LEFT RAIL: both review codes, corner to corner -->
+    <aside class="rail">
+      <div class="qr-card qr-google">
+        <div class="qr-box" id="qrGoogle"></div>
+        <div class="qr-label">Review us on Google</div>
+        <div class="qr-sub">Scan with your phone camera</div>
+      </div>
+      <div class="qr-card qr-facebook">
+        <div class="qr-box" id="qrFacebook"></div>
+        <div class="qr-label">Review us on Facebook</div>
+        <div class="qr-sub">Scan with your phone camera</div>
+      </div>
+    </aside>
+
+    <!-- CENTRE: photos on top, good-to-know beneath -->
+    <section class="centre">
+
       <div class="photo-frame">
         <img class="photo-img" id="photoA" alt="">
         <img class="photo-img" id="photoB" alt="">
@@ -33,12 +48,9 @@
           <div class="photo-empty-text">Auction photos load here</div>
         </div>
       </div>
+
       <div class="photo-caption" id="photoCaption"></div>
       <div class="auction-strip" id="auctionStrip"></div>
-    </section>
-
-    <!-- RIGHT: rotating terms + QR codes -->
-    <aside class="side">
 
       <div class="terms-card" id="termsCard">
         <div class="terms-eyebrow">GOOD TO KNOW</div>
@@ -47,29 +59,20 @@
         <div class="terms-dots" id="termsDots"></div>
       </div>
 
-      <div class="qr-row" id="qrRow">
-        <div class="qr-card qr-google">
-          <div class="qr-box" id="qrGoogle"></div>
-          <div class="qr-label">Review us on Google</div>
-          <div class="qr-sub">Scan with your phone camera</div>
-        </div>
-        <div class="qr-card qr-facebook">
-          <div class="qr-box" id="qrFacebook"></div>
-          <div class="qr-label">Review us on Facebook</div>
-          <div class="qr-sub">Scan with your phone camera</div>
-        </div>
-        <div class="qr-card qr-consign">
-          <div class="qr-box" id="qrConsign"></div>
-          <div class="qr-label">Sell With Us</div>
-          <div class="qr-sub">We'll call you back</div>
-        </div>
-        <div class="qr-card qr-terms">
-          <div class="qr-box" id="qrTerms"></div>
-          <div class="qr-label">Full Terms</div>
-          <div class="qr-sub">Read before you bid</div>
-        </div>
-      </div>
+    </section>
 
+    <!-- RIGHT RAIL: consign + terms, corner to corner -->
+    <aside class="rail">
+      <div class="qr-card qr-consign">
+        <div class="qr-box" id="qrConsign"></div>
+        <div class="qr-label">Sell With Us</div>
+        <div class="qr-sub">We'll call you back</div>
+      </div>
+      <div class="qr-card qr-terms">
+        <div class="qr-box" id="qrTerms"></div>
+        <div class="qr-label">Full Terms</div>
+        <div class="qr-sub">Read before you bid</div>
+      </div>
     </aside>
 
   </main>

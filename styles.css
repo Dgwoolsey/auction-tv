@@ -1,6 +1,11 @@
 /* Woolsey Auction Company — checkout counter TV
    Designed for a 1920x1080 screen viewed from roughly 10 feet.
-   All sizing is in vw/vh so it scales to whatever TV it lands on. */
+   All sizing is in vw/vh so it scales to whatever TV it lands on.
+
+   Layout: QR codes sit one in each corner, as far apart as the screen allows,
+   because phone cameras were picking up two codes at once when they were in a
+   row. Review codes share the left rail so a customer being asked for a review
+   only has to look at one side. */
 
 :root {
   --ink:        #0d0f12;
@@ -40,7 +45,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 2.2vw;
+  padding: 0 2vw;
   background: linear-gradient(180deg, var(--ink-2), var(--ink));
   border-bottom: 0.25vh solid var(--gold);
 }
@@ -62,22 +67,80 @@ html, body {
 .clock-time { font-size: 3.1vh; font-weight: 700; font-variant-numeric: tabular-nums; }
 .clock-date { font-size: 1.7vh; color: var(--text-dim); }
 
-/* ---------- main stage ---------- */
+/* ---------- stage: rail | centre | rail ---------- */
 
+/* Rails are deliberately narrow. Smaller cards pushed to opposite corners put
+   roughly seven inches of dead space between the two codes on a 55" screen —
+   enough that a phone framing one cannot also frame the other. */
 .stage {
   display: grid;
-  grid-template-columns: 62fr 38fr;
-  gap: 1.4vw;
-  padding: 1.4vw 2.2vw;
+  grid-template-columns: 10.5vw 1fr 10.5vw;
+  gap: 1.2vw;
+  padding: 1vh 1.2vw;
   min-height: 0;
 }
 
-/* ---------- photo slideshow ---------- */
+/* Rails push their two codes to opposite corners — maximum separation so a
+   phone camera can only frame one at a time. */
+.rail {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 0;
+}
 
-.photos {
+/* ---------- QR codes ---------- */
+
+.qr-card {
+  background: var(--ink-2);
+  border: 0.15vh solid var(--line);
+  border-radius: 1vh;
+  padding: 1.1vh 0.5vw 1.3vh 0.5vw;
+  text-align: center;
+}
+
+.qr-card.hide { visibility: hidden; }
+
+.qr-google   { border-bottom: 0.5vh solid var(--blue); }
+.qr-facebook { border-bottom: 0.5vh solid #3b5998; }
+.qr-consign  { border-bottom: 0.5vh solid var(--gold); }
+.qr-terms    { border-bottom: 0.5vh solid var(--text-dim); }
+
+.qr-box {
+  background: #fff;
+  border-radius: 0.6vh;
+  padding: 0.9vh;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qr-box svg { width: 100%; height: 100%; display: block; }
+
+/* The codes got smaller, so the labels carry more of the job of telling people
+   what each one is for — keep them legible rather than scaling them down too. */
+.qr-label {
+  font-size: 1.8vh;
+  font-weight: 700;
+  margin-top: 1vh;
+  line-height: 1.15;
+}
+
+.qr-sub {
+  font-size: 1.4vh;
+  color: var(--text-dim);
+  margin-top: 0.3vh;
+  line-height: 1.2;
+}
+
+/* ---------- centre column ---------- */
+
+.centre {
   display: grid;
-  grid-template-rows: 1fr auto auto;
-  gap: 1.2vh;
+  grid-template-rows: 1fr auto auto auto;
+  gap: 0.8vh;
   min-height: 0;
 }
 
@@ -132,66 +195,61 @@ html, body {
 .photo-empty-text { font-size: 2.1vh; }
 
 .photo-caption {
-  font-size: 2.3vh;
+  font-size: 2.1vh;
   font-weight: 600;
-  color: var(--text);
+  text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-height: 3.2vh;
+  min-height: 2.8vh;
 }
 
+/* Kept deliberately compact — every vh here comes straight out of the photo. */
 .auction-strip {
   display: flex;
-  gap: 1vw;
-  flex-wrap: wrap;
+  gap: 0.8vw;
+  justify-content: center;
+  flex-wrap: nowrap;
 }
 
 .auction-chip {
   background: var(--ink-2);
   border: 0.15vh solid var(--line);
-  border-left: 0.45vh solid var(--gold);
-  border-radius: 0.6vh;
-  padding: 0.9vh 1.1vw;
+  border-left: 0.4vh solid var(--gold);
+  border-radius: 0.5vh;
+  padding: 0.45vh 0.8vw;
   min-width: 0;
 }
 
 .auction-chip-title {
-  font-size: 1.85vh;
+  font-size: 1.5vh;
   font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 22vw;
+  max-width: 18vw;
 }
 
 .auction-chip-meta {
-  font-size: 1.6vh;
+  font-size: 1.35vh;
   color: var(--gold-soft);
-  margin-top: 0.25vh;
+  margin-top: 0.1vh;
 }
 
-/* ---------- right column ---------- */
-
-.side {
-  display: grid;
-  grid-template-rows: 1fr auto;
-  gap: 1.4vh;
-  min-height: 0;
-}
+/* ---------- good to know (now a wide band under the photo) ---------- */
 
 .terms-card {
   background: var(--ink-2);
   border: 0.15vh solid var(--line);
+  border-top: 0.6vh solid var(--gold);
   border-radius: 1vh;
-  padding: 2.6vh 1.9vw;
+  padding: 1.6vh 2vw 1.2vh 2vw;
+  text-align: center;
+  transition: opacity 500ms ease;
+  min-height: 19vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  position: relative;
-  min-height: 0;
-  border-top: 0.6vh solid var(--gold);
-  transition: opacity 500ms ease;
 }
 
 .terms-card.fade { opacity: 0; }
@@ -203,29 +261,31 @@ html, body {
   letter-spacing: 0.25vw;
   color: var(--text-dim);
   font-weight: 700;
-  margin-bottom: 1.4vh;
+  margin-bottom: 0.9vh;
 }
 
 .terms-card.is-warning .terms-eyebrow { color: var(--red); }
 
 .terms-title {
-  font-size: 3.4vh;
+  font-size: 3.2vh;
   font-weight: 800;
   line-height: 1.15;
-  margin-bottom: 1.8vh;
+  margin-bottom: 1vh;
 }
 
 .terms-body {
-  font-size: 2.6vh;
-  line-height: 1.45;
+  font-size: 2.5vh;
+  line-height: 1.4;
   color: #dde3ea;
+  max-width: 52vw;
+  margin: 0 auto;
 }
 
 .terms-dots {
   display: flex;
   gap: 0.5vw;
-  margin-top: auto;
-  padding-top: 2vh;
+  justify-content: center;
+  margin-top: 1.4vh;
 }
 
 .dot {
@@ -236,58 +296,6 @@ html, body {
 }
 
 .dot.on { background: var(--gold); }
-
-/* ---------- QR codes ---------- */
-
-/* Auto-fits however many QR cards are present — three when there is no
-   consignment form URL set, four when there is. */
-.qr-row {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  gap: 0.7vw;
-}
-
-.qr-card {
-  background: var(--ink-2);
-  border: 0.15vh solid var(--line);
-  border-radius: 1vh;
-  padding: 1.2vh 0.4vw;
-  text-align: center;
-}
-
-.qr-card.hide { display: none; }
-
-.qr-google   { border-bottom: 0.5vh solid var(--blue); }
-.qr-facebook { border-bottom: 0.5vh solid #3b5998; }
-.qr-consign  { border-bottom: 0.5vh solid var(--gold); }
-.qr-terms    { border-bottom: 0.5vh solid var(--text-dim); }
-
-.qr-box {
-  background: #fff;
-  border-radius: 0.6vh;
-  padding: 0.7vh;
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.qr-box svg { width: 100%; height: 100%; display: block; }
-
-.qr-label {
-  font-size: 1.75vh;
-  font-weight: 700;
-  margin-top: 1vh;
-  line-height: 1.2;
-}
-
-.qr-sub {
-  font-size: 1.4vh;
-  color: var(--text-dim);
-  margin-top: 0.3vh;
-}
 
 /* ---------- ticker ---------- */
 
@@ -319,7 +327,8 @@ html, body {
 .status {
   position: fixed;
   bottom: 7.2vh;
-  right: 1vw;
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 1.4vh;
   color: var(--text-dim);
   background: rgba(0,0,0,0.65);

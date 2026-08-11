@@ -414,8 +414,31 @@ async function main() {
     console.warn(`Scrape failed, publishing Airtable content only: ${err.message}`);
   }
 
-  // Manual photos first, then scraped, capped so data.json stays small.
-  const slides = [...manualSlides, ...scrapedSlides].slice(0, MAX_PHOTOS_TOTAL);
+  /* Interleave the scraped photos round-robin across auctions.
+   *
+   * Left grouped, all of auction A plays before any of auction B — with 45
+   * photos each at 7 seconds, the second auction does not appear for over five
+   * minutes, so the TV looks like it is only advertising one sale. Alternating
+   * means every auction is on screen within the first few slides. */
+  const byAuction = new Map();
+  for (const photo of scrapedSlides) {
+    const key = photo.auctionId || 'unknown';
+    if (!byAuction.has(key)) byAuction.set(key, []);
+    byAuction.get(key).push(photo);
+  }
+
+  const queues = [...byAuction.values()];
+  const interleaved = [];
+  for (let i = 0; queues.some(q => q.length > i); i++) {
+    for (const q of queues) {
+      if (q[i]) interleaved.push(q[i]);
+    }
+  }
+
+  // Photos Dalton added by hand lead, then the interleaved auction lots.
+  const slides = [...manualSlides, ...interleaved].slice(0, MAX_PHOTOS_TOTAL);
+
+  console.log(`  slide order: ${queues.length} auction(s) interleaved`);
 
   // QR codes are rendered once here rather than in the browser, so the TV
   // never needs a network call to a third party.
