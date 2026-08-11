@@ -153,13 +153,15 @@ html, body {
   min-height: 0;
 }
 
+/* Lot photos are mostly portrait in a landscape frame. Letting the letterbox
+   bars take the panel colour instead of hard black stops a tall photo from
+   looking like a small photo floating in a void. */
 .photo-img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: contain;
-  background: #000;
   opacity: 0;
   transition: opacity 900ms ease-in-out;
 }
