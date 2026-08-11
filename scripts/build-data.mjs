@@ -425,6 +425,7 @@ async function main() {
   const qr = {};
   for (const [key, setting] of [['google','google_review_url'],
                                 ['facebook','facebook_review_url'],
+                                ['consign','consign_form_url'],
                                 ['terms','terms_full_url']]) {
     if (settings[setting]) {
       qr[key] = await QRCode.toString(settings[setting], qrOpts);

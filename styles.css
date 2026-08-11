@@ -239,22 +239,28 @@ html, body {
 
 /* ---------- QR codes ---------- */
 
+/* Auto-fits however many QR cards are present — three when there is no
+   consignment form URL set, four when there is. */
 .qr-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 0.9vw;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 0.7vw;
 }
 
 .qr-card {
   background: var(--ink-2);
   border: 0.15vh solid var(--line);
   border-radius: 1vh;
-  padding: 1.4vh 0.6vw;
+  padding: 1.2vh 0.4vw;
   text-align: center;
 }
 
+.qr-card.hide { display: none; }
+
 .qr-google   { border-bottom: 0.5vh solid var(--blue); }
 .qr-facebook { border-bottom: 0.5vh solid #3b5998; }
+.qr-consign  { border-bottom: 0.5vh solid var(--gold); }
 .qr-terms    { border-bottom: 0.5vh solid var(--text-dim); }
 
 .qr-box {

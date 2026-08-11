@@ -28,7 +28,7 @@
   var el = {};
   ['headline','clockTime','clockDate','photoA','photoB','photoEmpty','photoCaption',
    'auctionStrip','termsCard','termsTitle','termsBody','termsDots','qrGoogle',
-   'qrFacebook','qrTerms','tickerTrack','status'].forEach(function (id) {
+   'qrFacebook','qrConsign','qrTerms','tickerTrack','status'].forEach(function (id) {
     el[id] = document.getElementById(id);
   });
 
@@ -188,8 +188,17 @@
 
   function renderQr(node, svg) {
     if (!node) return;
+    var card = node.closest('.qr-card');
     node.innerHTML = '';
-    if (!svg) return;
+
+    // A code with no URL behind it would just be an empty white square, so
+    // hide the whole card and let the others take the space.
+    if (!svg) {
+      if (card) card.classList.add('hide');
+      return;
+    }
+
+    if (card) card.classList.remove('hide');
     // svg is generated at build time by the qrcode package; it is our own
     // content, not user input.
     node.innerHTML = svg;
@@ -208,6 +217,7 @@
     var qr = data.qr || {};
     renderQr(el.qrGoogle, qr.google);
     renderQr(el.qrFacebook, qr.facebook);
+    renderQr(el.qrConsign, qr.consign);
     renderQr(el.qrTerms, qr.terms);
 
     state.slides = (data.slides || []).filter(function (s) { return s && s.imageUrl; });
