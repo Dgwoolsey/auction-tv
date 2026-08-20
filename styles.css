@@ -104,7 +104,7 @@ html, body {
 .qr-google   { border-bottom: 0.5vh solid var(--blue); }
 .qr-facebook { border-bottom: 0.5vh solid #3b5998; }
 .qr-consign  { border-bottom: 0.5vh solid var(--gold); }
-.qr-terms    { border-bottom: 0.5vh solid var(--text-dim); }
+.qr-bid      { border-bottom: 0.5vh solid var(--green); }
 
 .qr-box {
   background: #fff;
@@ -206,36 +206,81 @@ html, body {
   min-height: 2.8vh;
 }
 
-/* Kept deliberately compact — every vh here comes straight out of the photo. */
-.auction-strip {
-  display: flex;
-  gap: 0.8vw;
-  justify-content: center;
-  flex-wrap: nowrap;
-}
+/* ---------- auction carousel ----------
+ * One sale at a time so every auction gets counter time and each gets room for
+ * the details people actually ask about. Kept deliberately compact — every vh
+ * here comes straight out of the photo above it. */
 
-.auction-chip {
+.auction-card {
   background: var(--ink-2);
   border: 0.15vh solid var(--line);
-  border-left: 0.4vh solid var(--gold);
-  border-radius: 0.5vh;
-  padding: 0.45vh 0.8vw;
-  min-width: 0;
+  border-left: 0.5vh solid var(--gold);
+  border-radius: 0.7vh;
+  padding: 0.9vh 1.4vw 0.7vh 1.4vw;
+  transition: opacity 500ms ease, border-left-color 500ms ease;
 }
 
-.auction-chip-title {
-  font-size: 1.5vh;
-  font-weight: 700;
+.auction-card.fade { opacity: 0; }
+.auction-card.hide { display: none; }
+
+/* Closing inside a day, and closing right now, should read differently at a
+ * glance from a sale that still has a week left. */
+.auction-card.is-soon { border-left-color: var(--gold-soft); }
+.auction-card.is-now  { border-left-color: var(--red); }
+
+.auction-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.2vw;
+}
+
+.auction-title {
+  font-size: 1.75vh;
+  font-weight: 800;
+  letter-spacing: 0.02em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 18vw;
+  min-width: 0;
 }
 
-.auction-chip-meta {
-  font-size: 1.35vh;
+.auction-countdown {
+  font-size: 1.4vh;
+  font-weight: 700;
   color: var(--gold-soft);
-  margin-top: 0.1vh;
+  white-space: nowrap;
+  flex: none;
+}
+
+.auction-card.is-now .auction-countdown { color: var(--red); }
+
+.auction-facts {
+  display: flex;
+  gap: 2.4vw;
+  margin-top: 0.55vh;
+}
+
+.fact-label {
+  font-size: 1.1vh;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold-soft);
+  opacity: 0.75;
+}
+
+.fact-value {
+  font-size: 1.6vh;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.auction-dots {
+  display: flex;
+  gap: 0.5vw;
+  justify-content: center;
+  margin-top: 0.6vh;
 }
 
 /* ---------- good to know (now a wide band under the photo) ---------- */

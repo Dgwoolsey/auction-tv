@@ -27,8 +27,18 @@ const TABLES = {
 };
 
 const SITE = 'https://bid.woolseyauction.com';
-const MAX_PHOTOS_PER_AUCTION = 45;
-const MAX_PHOTOS_TOTAL = 120;
+const MAX_PHOTOS_PER_AUCTION = 60;
+const MAX_PHOTOS_TOTAL = 300;
+
+/* The catalog serves ~50 lots per page. Two pages gets us past the 60-photo
+ * per-auction cap with room to spare once placards are filtered out; a third is
+ * only reached when a page comes back unusually thin. */
+const MAX_CATALOG_PAGES = 4;
+
+/* Everything Woolsey runs is on Colorado time. The build machine is UTC, so
+ * every date shown on the TV has to be formatted against this zone explicitly
+ * or a 6 PM close renders as the following day. */
+const TZ = 'America/Denver';
 
 /* Most auctions open with a run of informational placard lots — ATTENTION,
  * PAYMENT INFORMATION, REMOVAL INFORMATION and friends. They are text images,
@@ -69,6 +79,59 @@ function isInfoLot(caption) {
   // All-caps captions with no lowercase letters are almost always placards.
   if (c.length > 6 && c === c.toUpperCase() && /[A-Z]/.test(c)) return true;
   return false;
+}
+
+/* ------------------------------------------------------------------ */
+/* Dates                                                               */
+/* ------------------------------------------------------------------ */
+
+/* Read the parts of an instant as they appear in Colorado, not UTC. */
+function partsInTz(date) {
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: TZ, weekday: 'short', year: 'numeric', month: 'short',
+    day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true
+  });
+  const out = {};
+  for (const p of fmt.formatToParts(date)) out[p.type] = p.value;
+  return out;
+}
+
+/** "Thu Aug 20" */
+function shortDate(date) {
+  const p = partsInTz(date);
+  return `${p.weekday} ${p.month} ${p.day}`;
+}
+
+/** "6:00 PM" */
+function shortTime(date) {
+  const p = partsInTz(date);
+  return `${p.hour}:${p.minute} ${p.dayPeriod}`;
+}
+
+/* Pickup is always the day after the sale closes. Adding 24h to the instant is
+ * wrong across a DST change — Nov 1 would land back on Oct 31 — so step the
+ * calendar day in Colorado terms and rebuild from those numbers. */
+function nextDay(date) {
+  const p = partsInTz(date);
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const d = new Date(Date.UTC(+p.year, MONTHS.indexOf(p.month), +p.day, 12, 0, 0));
+  d.setUTCDate(d.getUTCDate() + 1);
+  // Noon UTC keeps the date stable when re-read in Colorado (UTC-6/-7).
+  return d;
+}
+
+/* The catalog page embeds every lot's soft-close instant as
+ * "end_time":"2026-08-27T00:07:00.000Z". The earliest one is when the sale
+ * starts closing, and unlike the staff-written description it is the time the
+ * bidding engine actually enforces. */
+function earliestEndTime(html) {
+  let earliest = null;
+  for (const m of html.matchAll(/"end_time"\s*:\s*"([^"]+)"/g)) {
+    const t = new Date(m[1]);
+    if (isNaN(t)) continue;
+    if (!earliest || t < earliest) earliest = t;
+  }
+  return earliest;
 }
 
 /* Without a token we fall back to fixtures/airtable.json — a snapshot of the
@@ -248,47 +311,86 @@ async function readLanding(auction) {
   }
 }
 
-/** Pull lot photos off an auction's catalog page. */
+/* Pull the lot photos out of one already-fetched catalog page. */
+function parseLots($, auctionId, seen) {
+  const photos = [];
+
+  // The catalog page carries ~250 as-assets images, but only the lot-grid
+  // ones have real alt text — the rest are cloned carousel thumbnails with
+  // empty alts, plus the site logo. Requiring a meaningful alt gives us the
+  // ~50 genuine lot photos and their captions in one step.
+  $('img[src*="as-assets.marknetalliance.com"]').each((_, img) => {
+    const src = $(img).attr('src');
+    const alt = ($(img).attr('alt') || '').trim();
+
+    if (!src || seen.has(src)) return;
+    if (!alt) return;                                   // carousel duplicate
+    if (/^(website logo|logo|image|photo|thumbnail)$/i.test(alt)) return;
+    if (isInfoLot(alt)) return;                         // informational placard
+
+    seen.add(src);
+
+    // The catalog serves /medium/ (432x576), which is soft on a big screen.
+    // The same path under /large/ is 1500x2000. Keep medium as a fallback in
+    // case a particular image was never rendered at the larger size.
+    const large = src.replace('/medium/', '/large/');
+
+    photos.push({
+      imageUrl: large,
+      fallbackUrl: large === src ? null : src,
+      caption: cleanCaption(alt),
+      auctionId
+    });
+  });
+
+  return photos;
+}
+
+/** Pull lot photos, and the real closing time, off an auction's catalog.
+ *
+ * The catalog is paginated at ~50 lots per page via ?page=N. Reading only the
+ * first page meant a 785-lot sale showed the same 46 photos forever, so we walk
+ * pages until the per-auction cap is met or a page stops yielding anything new.
+ *
+ * Mutates auction.closeAt — the close time is embedded in the same HTML, so
+ * harvesting it here costs no extra request.
+ */
 async function readLots(auction) {
   if (!auction.slugPath) return [];
-  try {
-    const $ = cheerio.load(await getHtml(auction.slugPath));
-    const photos = [];
-    const seen = new Set();
 
-    // The catalog page carries ~250 as-assets images, but only the lot-grid
-    // ones have real alt text — the rest are cloned carousel thumbnails with
-    // empty alts, plus the site logo. Requiring a meaningful alt gives us the
-    // ~50 genuine lot photos and their captions in one step.
-    $('img[src*="as-assets.marknetalliance.com"]').each((_, img) => {
-      const src = $(img).attr('src');
-      const alt = ($(img).attr('alt') || '').trim();
+  const photos = [];
+  const seen = new Set();
+  const joiner = auction.slugPath.includes('?') ? '&' : '?';
 
-      if (!src || seen.has(src)) return;
-      if (!alt) return;                                   // carousel duplicate
-      if (/^(website logo|logo|image|photo|thumbnail)$/i.test(alt)) return;
-      if (isInfoLot(alt)) return;                         // informational placard
+  for (let page = 1; page <= MAX_CATALOG_PAGES; page++) {
+    if (photos.length >= MAX_PHOTOS_PER_AUCTION) break;
 
-      seen.add(src);
+    const url = page === 1 ? auction.slugPath : `${auction.slugPath}${joiner}page=${page}`;
 
-      // The catalog serves /medium/ (432x576), which is soft on a big screen.
-      // The same path under /large/ is 1500x2000. Keep medium as a fallback in
-      // case a particular image was never rendered at the larger size.
-      const large = src.replace('/medium/', '/large/');
+    try {
+      const html = await getHtml(url);
+      const $ = cheerio.load(html);
 
-      photos.push({
-        imageUrl: large,
-        fallbackUrl: large === src ? null : src,
-        caption: cleanCaption(alt),
-        auctionId: auction.id
-      });
-    });
+      // Page 1 carries the whole sale's lot set in its embedded data, so its
+      // earliest end_time is the sale's. Later pages only see their own lots.
+      if (page === 1) {
+        const end = earliestEndTime(html);
+        if (end) auction.closeAt = end;
+      }
 
-    return photos.slice(0, MAX_PHOTOS_PER_AUCTION);
-  } catch (err) {
-    console.warn(`  catalog for ${auction.id} failed: ${err.message}`);
-    return [];
+      const batch = parseLots($, auction.id, seen);
+      // A page past the end of the catalog re-serves the last page or comes
+      // back empty; either way nothing new appears and we are done.
+      if (!batch.length) break;
+
+      photos.push(...batch);
+    } catch (err) {
+      console.warn(`  catalog for ${auction.id} page ${page} failed: ${err.message}`);
+      break;
+    }
   }
+
+  return photos.slice(0, MAX_PHOTOS_PER_AUCTION);
 }
 
 /* ------------------------------------------------------------------ */
@@ -311,7 +413,7 @@ async function syncAuctions(scraped) {
     const fields = {
       Title: a.title || `Auction ${a.id}`,
       AuctionId: String(a.id),
-      CloseDate: a.closeDate || '',
+      CloseDate: a.closeAt ? `${shortDate(a.closeAt)} ${shortTime(a.closeAt)}` : (a.closeDate || ''),
       LotCount: a.lotCount || undefined,
       HeroImage: a.heroImage || undefined,
       ListingUrl: a.listingUrl || undefined,
@@ -407,6 +509,19 @@ async function main() {
     scrapedSlides = lotSets.flat();
     console.log(`  ${scrapedSlides.length} lot photos`);
 
+    // Soonest-closing first, so the carousel leads with the sale a customer at
+    // the counter is most likely to still be able to bid on. Sales with no
+    // close time fall to the back rather than jumbling the order.
+    auctions.sort((a, b) => {
+      if (!a.closeAt) return 1;
+      if (!b.closeAt) return -1;
+      return a.closeAt - b.closeAt;
+    });
+
+    for (const a of auctions) {
+      console.log(`  ${a.id}: closes ${a.closeAt ? a.closeAt.toISOString() : '(unknown)'}`);
+    }
+
     if (auctions.length) {
       await syncAuctions(auctions);
     }
@@ -449,7 +564,7 @@ async function main() {
   for (const [key, setting] of [['google','google_review_url'],
                                 ['facebook','facebook_review_url'],
                                 ['consign','consign_form_url'],
-                                ['terms','terms_full_url']]) {
+                                ['bid','bid_url']]) {
     if (settings[setting]) {
       qr[key] = await QRCode.toString(settings[setting], qrOpts);
     }
@@ -465,12 +580,21 @@ async function main() {
     termsSeconds: parseFloat(settings.terms_seconds) || 12,
     qr,
     terms,
-    auctions: auctions.map(a => ({
-      title: a.title,
-      closeDate: a.closeDate,
-      lotCount: a.lotCount,
-      listingUrl: a.listingUrl
-    })),
+    auctions: auctions.map(a => {
+      // closeAt comes from the catalog's embedded lot end times and is what the
+      // bidding engine enforces; the landing-page prose is only a fallback, and
+      // on at least one sale it has disagreed with the real close by a day.
+      const pickup = a.closeAt ? nextDay(a.closeAt) : null;
+      return {
+        title: a.title,
+        closeAt: a.closeAt ? a.closeAt.toISOString() : '',
+        closeDay: a.closeAt ? shortDate(a.closeAt) : (a.closeDate || ''),
+        closeTime: a.closeAt ? shortTime(a.closeAt) : '',
+        pickupDay: pickup ? shortDate(pickup) : '',
+        lotCount: a.lotCount,
+        listingUrl: a.listingUrl
+      };
+    }),
     slides
   };
 

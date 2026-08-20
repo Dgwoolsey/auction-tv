@@ -15,6 +15,8 @@
   var REFRESH_MS = 5 * 60 * 1000;   // re-read data.json every 5 minutes
   var RELOAD_MS = 6 * 60 * 60 * 1000; // full page reload every 6 hours
 
+  var AUCTION_MS = 12 * 1000;       // each auction holds the card this long
+
   var state = {
     data: null,
     slides: [],
@@ -22,13 +24,18 @@
     termIdx: 0,
     frontIsA: true,
     slideTimer: null,
-    termTimer: null
+    termTimer: null,
+    auctions: [],
+    auctionIdx: 0,
+    auctionTimer: null,
+    countdownTimer: null
   };
 
   var el = {};
   ['headline','clockTime','clockDate','photoA','photoB','photoEmpty','photoCaption',
-   'auctionStrip','termsCard','termsTitle','termsBody','termsDots','qrGoogle',
-   'qrFacebook','qrConsign','qrTerms','tickerTrack','status'].forEach(function (id) {
+   'auctionCard','auctionTitle','auctionCountdown','auctionCloses','auctionPickup',
+   'auctionLots','auctionDots','termsCard','termsTitle','termsBody','termsDots',
+   'qrGoogle','qrFacebook','qrConsign','qrBid','tickerTrack','status'].forEach(function (id) {
     el[id] = document.getElementById(id);
   });
 
@@ -159,29 +166,103 @@
     state.termTimer = setInterval(showTerm, seconds * 1000);
   }
 
-  /* ---------------- auctions strip ---------------- */
+  /* ---------------- auction carousel ---------------- */
 
-  function renderAuctions(auctions) {
-    if (!auctions || !auctions.length) { el.auctionStrip.innerHTML = ''; return; }
-    el.auctionStrip.innerHTML = auctions.slice(0, 3).map(function (a) {
-      var meta = [];
-      if (a.closeDate) meta.push(a.closeDate);
-      if (a.lotCount)  meta.push(a.lotCount + ' lots');
-      return '<div class="auction-chip">' +
-               '<div class="auction-chip-title"></div>' +
-               '<div class="auction-chip-meta"></div>' +
-             '</div>';
-    }).join('');
+  /* How long until this sale closes, in the plainest words possible — someone
+   * reading from across the counter should not have to do arithmetic. */
+  function countdownText(closeAt) {
+    if (!closeAt) return '';
+    var ms = new Date(closeAt).getTime() - Date.now();
+    if (!isFinite(ms)) return '';
+    if (ms <= 0) return 'closing now';
 
-    // Set text via textContent so auction titles can never inject markup.
-    var chips = el.auctionStrip.querySelectorAll('.auction-chip');
-    auctions.slice(0, 3).forEach(function (a, i) {
-      var meta = [];
-      if (a.closeDate) meta.push(a.closeDate);
-      if (a.lotCount)  meta.push(a.lotCount + ' lots');
-      chips[i].querySelector('.auction-chip-title').textContent = a.title || '';
-      chips[i].querySelector('.auction-chip-meta').textContent = meta.join('  ·  ');
-    });
+    var mins = Math.floor(ms / 60000);
+    if (mins < 60) return 'closing in ' + mins + (mins === 1 ? ' minute' : ' minutes');
+
+    var hours = Math.floor(mins / 60);
+    if (hours < 24) return 'closing in ' + hours + (hours === 1 ? ' hour' : ' hours');
+
+    var days = Math.round(hours / 24);
+    return 'closes in ' + days + (days === 1 ? ' day' : ' days');
+  }
+
+  /* Urgency colouring: the sale closing today should not look like the one
+   * closing next week. */
+  function urgencyClass(closeAt) {
+    if (!closeAt) return '';
+    var ms = new Date(closeAt).getTime() - Date.now();
+    if (!isFinite(ms) || ms <= 0) return 'is-now';
+    if (ms < 24 * 60 * 60 * 1000) return 'is-soon';
+    return '';
+  }
+
+  function paintCountdown() {
+    var a = state.auctions[state.auctionIdx];
+    if (!a) return;
+    el.auctionCountdown.textContent = countdownText(a.closeAt);
+    el.auctionCard.classList.remove('is-soon', 'is-now');
+    var cls = urgencyClass(a.closeAt);
+    if (cls) el.auctionCard.classList.add(cls);
+  }
+
+  function paintAuction() {
+    var a = state.auctions[state.auctionIdx];
+    if (!a) return;
+
+    // textContent throughout so a scraped auction title can never inject markup.
+    el.auctionTitle.textContent = a.title || '';
+
+    var closes = a.closeDay || '';
+    if (a.closeDay && a.closeTime) closes = a.closeDay + '  ·  ' + a.closeTime;
+    el.auctionCloses.textContent = closes || 'See listing';
+
+    el.auctionPickup.textContent = a.pickupDay || 'Day after close';
+    el.auctionLots.textContent = a.lotCount ? String(a.lotCount) : '—';
+
+    renderAuctionDots();
+    paintCountdown();
+  }
+
+  function renderAuctionDots() {
+    var html = '';
+    for (var i = 0; i < state.auctions.length; i++) {
+      html += '<div class="dot' + (i === state.auctionIdx ? ' on' : '') + '"></div>';
+    }
+    el.auctionDots.innerHTML = html;
+  }
+
+  /* Cross-fade to the next sale, the same way the terms tiles turn over. */
+  function nextAuction() {
+    if (state.auctions.length < 2) return;
+    el.auctionCard.classList.add('fade');
+    setTimeout(function () {
+      state.auctionIdx = (state.auctionIdx + 1) % state.auctions.length;
+      paintAuction();
+      el.auctionCard.classList.remove('fade');
+    }, 500);
+  }
+
+  function startAuctions(auctions) {
+    clearInterval(state.auctionTimer);
+    clearInterval(state.countdownTimer);
+
+    state.auctions = auctions || [];
+    state.auctionIdx = 0;
+
+    if (!state.auctions.length) {
+      el.auctionCard.classList.add('hide');
+      return;
+    }
+
+    el.auctionCard.classList.remove('hide', 'fade');
+    paintAuction();
+
+    if (state.auctions.length > 1) {
+      state.auctionTimer = setInterval(nextAuction, AUCTION_MS);
+    }
+    // The card can sit on one sale for minutes; keep its countdown honest
+    // without waiting for the next data refresh.
+    state.countdownTimer = setInterval(paintCountdown, 30000);
   }
 
   /* ---------------- QR codes ---------------- */
@@ -212,13 +293,13 @@
     el.headline.textContent = data.headline || 'Thanks for bidding with us';
     el.tickerTrack.textContent = data.ticker || '';
 
-    renderAuctions(data.auctions);
+    startAuctions(data.auctions);
 
     var qr = data.qr || {};
     renderQr(el.qrGoogle, qr.google);
     renderQr(el.qrFacebook, qr.facebook);
     renderQr(el.qrConsign, qr.consign);
-    renderQr(el.qrTerms, qr.terms);
+    renderQr(el.qrBid, qr.bid);
 
     state.slides = (data.slides || []).filter(function (s) { return s && s.imageUrl; });
     state.slideIdx = 0;

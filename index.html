@@ -50,7 +50,29 @@
       </div>
 
       <div class="photo-caption" id="photoCaption"></div>
-      <div class="auction-strip" id="auctionStrip"></div>
+
+      <!-- One auction at a time, cycling through every live sale. -->
+      <div class="auction-card" id="auctionCard">
+        <div class="auction-head">
+          <div class="auction-title" id="auctionTitle"></div>
+          <div class="auction-countdown" id="auctionCountdown"></div>
+        </div>
+        <div class="auction-facts">
+          <div class="fact">
+            <div class="fact-label">Closes</div>
+            <div class="fact-value" id="auctionCloses"></div>
+          </div>
+          <div class="fact">
+            <div class="fact-label">Pickup</div>
+            <div class="fact-value" id="auctionPickup"></div>
+          </div>
+          <div class="fact">
+            <div class="fact-label">Lots</div>
+            <div class="fact-value" id="auctionLots"></div>
+          </div>
+        </div>
+        <div class="auction-dots" id="auctionDots"></div>
+      </div>
 
       <div class="terms-card" id="termsCard">
         <div class="terms-eyebrow">GOOD TO KNOW</div>
@@ -68,10 +90,10 @@
         <div class="qr-label">Sell With Us</div>
         <div class="qr-sub">We'll call you back</div>
       </div>
-      <div class="qr-card qr-terms">
-        <div class="qr-box" id="qrTerms"></div>
-        <div class="qr-label">Full Terms</div>
-        <div class="qr-sub">Read before you bid</div>
+      <div class="qr-card qr-bid">
+        <div class="qr-box" id="qrBid"></div>
+        <div class="qr-label">Bid Online</div>
+        <div class="qr-sub">Scan to see every auction</div>
       </div>
     </aside>
 
